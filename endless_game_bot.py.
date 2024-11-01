@@ -1,0 +1,71 @@
+import random
+import time
+import threading
+from telegram import Update
+from telegram.ext import Application, CommandHandler, ContextTypes
+
+# 7620655519:AAG_pbBJ-NrtSKhTfxXaLAAacMf6XXVQNvk
+TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
+
+game_active = False
+game_thread = None
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global game_active, game_thread
+    if not game_active:
+        game_active = True
+        await update.message.reply_text("Starting the endless game with auto-boost...")
+        game_thread = threading.Thread(target=play_game)
+        game_thread.start()
+    else:
+        await update.message.reply_text("Game is already running!")
+
+async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global game_active
+    if game_active:
+        game_active = False
+        await update.message.reply_text("Game has been stopped.")
+    else:
+        await update.message.reply_text("No game is currently running.")
+
+def play_game():
+    global game_active
+    while game_active:
+        # Simulate a single game round
+        play_round()
+        time.sleep(random.uniform(5, 10))  # Random delay between rounds
+        if random.random() < 0.1:
+            time.sleep(random.uniform(60, 300))  # Simulate a break every few rounds
+
+def play_round():
+    if check_boost_available():
+        if random.random() < 0.7:  # 70% chance to use boost
+            activate_boost()
+
+    flip_card()
+    time.sleep(random.uniform(1, 2))  # Random delay added
+
+def check_boost_available():
+    # Placeholder logic for checking boost availability
+    return True
+
+def activate_boost():
+    print("Boost activated!")
+
+def flip_card():
+    print("Card flipped!")
+
+async def main():
+    app = Application.builder().token(TOKEN).build()
+
+    # Register command handlers
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("stop", stop))
+
+    # Start the bot
+    await app.start()
+    await app.idle()
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
